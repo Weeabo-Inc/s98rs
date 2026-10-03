@@ -1,0 +1,19 @@
+# The hid_keyboard example is a bare-metal Cortex-M0 binary.
+#
+# This file exists so that `cargo build --example hid_keyboard` works from this
+# directory without inheriting the parent configuration by accident. The parent
+# `../../.cargo/config.toml` sets the target; the `-Tlink.x` argument comes from
+# `../fw/.cargo/config.toml` and is repeated here because cargo does not merge
+# configuration from sibling directories.
+#
+# Host tests are unaffected: this section is target-specific. Run them with an
+# explicit host target, because the parent sets a default target of thumbv6m and
+# there is no test harness for it:
+#
+#     cargo test --target x86_64-pc-windows-msvc
+
+[build]
+target = "thumbv6m-none-eabi"
+
+[target.thumbv6m-none-eabi]
+rustflags = ["-C", "link-arg=-Tlink.x"]

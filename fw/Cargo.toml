@@ -1,0 +1,22 @@
+[package]
+name = "s98-whale-fw"
+version = "0.1.0"
+edition = "2021"
+description = "Whale Certified Firmware for the AULA S98Pro (Sonix SN32F290, Cortex-M0)"
+license = "MIT"
+
+[dependencies]
+cortex-m = "0.7"
+cortex-m-rt = "0.7"
+panic-halt = "0.2"
+
+# The PAC is not used by Phase 1 - this firmware deliberately touches no
+# peripheral. It is listed so that later phases can reach it without a manifest
+# change, and it is commented out because an unused dependency is a liability.
+# sn32f290-pac = { path = "../pac" }
+
+[profile.release]
+opt-level = "s"
+lto = true
+debug = true
+overflow-checks = true

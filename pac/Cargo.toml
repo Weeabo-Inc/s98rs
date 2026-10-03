@@ -1,0 +1,14 @@
+﻿[package]
+name = "sn32f290-pac"
+version = "0.1.0"
+edition = "2021"
+description = "Peripheral access crate for the Sonix SN32F290 (Cortex-M0), generated from the vendor SVD"
+license = "MIT"
+
+[dependencies]
+cortex-m = "0.7"
+cortex-m-rt = { version = "0.7", optional = true }
+vcell = "0.1"
+
+[features]
+rt = ["cortex-m-rt/device"]

@@ -1,0 +1,9 @@
+﻿[build]
+target = "thumbv6m-none-eabi"
+
+[target.thumbv6m-none-eabi]
+rustflags = ["-C", "link-arg=-Tlink.x"]
+runner = "echo (no runner configured - flash with sonix-rs)"
+
+[env]
+DEFMT_LOG = "off"

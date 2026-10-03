@@ -1,0 +1,62 @@
+[package]
+name = "sn32f290-usb"
+version = "0.1.0"
+edition = "2021"
+description = "usb-device UsbBus implementation for the Sonix SN32F290 USB device controller"
+license = "MIT"
+
+# NOTE ON THE usb-device VERSION
+# ------------------------------
+# Pinned to 0.3.2, the only version present in the local cargo registry cache,
+# so the build works offline.
+#
+# 0.3.x is also the *first* series that uses `portable-atomic` rather than core
+# atomics directly, which is what makes it viable on Cortex-M0 at all:
+# thumbv6m-none-eabi has no LDREX/STREX, so `target_has_atomic = "32"` is absent
+# and `core::sync::atomic::AtomicPtr` does not exist. usb-device 0.2.x therefore
+# cannot build for this target; 0.3.x can. Verified by building, not assumed.
+[dependencies]
+usb-device = { version = "=0.3.2", default-features = false }
+
+# Only pulled in on the real target. The host build swaps in a memory-backed
+# register file (see src/regs.rs) so the driver logic is testable offline.
+[target.'cfg(target_arch = "arm")'.dependencies]
+cortex-m = "0.7"
+sn32f290-pac = { path = "../pac" }
+
+# Needed only by examples/hid_keyboard.rs, which is a real bare-metal binary.
+# Gated on the target for the same reason: a host `cargo test` has no use for
+# them, and pulling the PAC into a host build would be misleading.
+[target.'cfg(target_arch = "arm")'.dev-dependencies]
+cortex-m = "0.7"
+cortex-m-rt = "0.7"
+panic-halt = "0.2"
+# The `rt` feature makes the PAC emit its device.x, which is what gives
+# cortex-m-rt the `USB` vector for `#[interrupt] fn USB()`.
+sn32f290-pac = { path = "../pac", features = ["rt"] }
+
+[features]
+default = []
+# Programs the device address before the SET_ADDRESS status stage instead of
+# after, removing a dependency on an unverified hardware behaviour. See
+# `SET_ADDRESS_QUIRK` in src/lib.rs. Turn this on if enumeration stalls at
+# SET_ADDRESS.
+quirk-set-address-before-status = []
+# Gates examples/hid_keyboard.rs, which is a bare-metal Cortex-M binary.
+#
+# It is behind a feature rather than always-on so that a host `cargo test` does
+# not try to build it: cargo builds examples during `cargo test`, and this one
+# needs cortex-m-rt, panic-halt and the PAC's runtime feature, none of which
+# exist for x86_64.
+hid-example = []
+
+# The example is a bare-metal binary and only exists for the target.
+[[example]]
+name = "hid_keyboard"
+required-features = ["hid-example"]
+
+[profile.release]
+opt-level = "s"
+lto = true
+debug = true
+overflow-checks = true
